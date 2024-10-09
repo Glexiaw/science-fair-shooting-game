@@ -54,6 +54,11 @@ window.onload = function() {
     canvas.addEventListener('mouseup', dropNucleus);
     canvas.addEventListener('mousemove', updateAimLine); // อัปเดตเส้นเล็งตามเมาส์
 
+    // การลากนิวเคลียสสำหรับการสัมผัส
+    canvas.addEventListener('touchstart', selectNucleusTouch);
+    canvas.addEventListener('touchmove', moveNucleusTouch);
+    canvas.addEventListener('touchend', dropNucleus);
+
     gameLoop(); // เรียกฟังก์ชัน gameLoop ครั้งแรกเพื่อเริ่มต้นการวาด
 };
 
@@ -134,6 +139,31 @@ function moveNucleus(event) {
         let rect = canvas.getBoundingClientRect();
         activeNucleus.x = event.clientX - rect.left;
         activeNucleus.y = event.clientY - rect.top;
+    }
+}
+
+// ฟังก์ชันสัมผัสสำหรับการเลือกนิวเคลียส
+function selectNucleusTouch(event) {
+    if (isGameRunning) {
+        let rect = canvas.getBoundingClientRect();
+        let touchX = event.touches[0].clientX - rect.left;
+        let touchY = event.touches[0].clientY - rect.top;
+
+        for (let nucleus of nuclei) {
+            if (nucleus.isActive && Math.hypot(touchX - nucleus.x, touchY - nucleus.y) < nucleus.radius) {
+                activeNucleus = nucleus;
+                break;
+            }
+        }
+    }
+}
+
+// ฟังก์ชันสัมผัสสำหรับการเคลื่อนที่นิวเคลียส
+function moveNucleusTouch(event) {
+    if (isGameRunning && activeNucleus) {
+        let rect = canvas.getBoundingClientRect();
+        activeNucleus.x = event.touches[0].clientX - rect.left;
+        activeNucleus.y = event.touches[0].clientY - rect.top;
     }
 }
 
