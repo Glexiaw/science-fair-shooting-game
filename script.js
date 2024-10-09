@@ -11,8 +11,9 @@ const gunPosition = { x: 400, y: 550 }; // ตำแหน่งปืน
 window.onload = function() {
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
-    canvas.width = 800;
-    canvas.height = 600;
+    resizeCanvas(); // ปรับขนาด canvas
+
+    window.addEventListener('resize', resizeCanvas);
 
     document.getElementById('main-menu').style.display = 'block'; // แสดงเมนูหลัก
 
@@ -23,12 +24,17 @@ window.onload = function() {
     document.getElementById('how-to-play').addEventListener('click', () => document.getElementById('popup').style.display = 'block');
     document.getElementById('close-popup').addEventListener('click', () => document.getElementById('popup').style.display = 'none');
 
+    // การลากนิวเคลียสสำหรับการสัมผัส
+    canvas.addEventListener('touchstart', selectNucleusTouch);
+    canvas.addEventListener('touchmove', moveNucleusTouch);
+    canvas.addEventListener('touchend', dropNucleus);
+
     // สร้างนิวเคลียส 3 อันไว้ข้างๆ ปืนยิง
     for (let i = 0; i < 3; i++) {
         nuclei.push({ x: gunPosition.x + 30 * i - 30, y: gunPosition.y - 30, radius: 15, isActive: true });
     }
 
-    // การลากนิวเคลียส
+    // การลากนิวเคลียสด้วยเมาส์
     canvas.addEventListener('mousedown', selectNucleus);
     canvas.addEventListener('mousemove', moveNucleus);
     canvas.addEventListener('mouseup', dropNucleus);
@@ -36,6 +42,12 @@ window.onload = function() {
 
     gameLoop(); // เรียกฟังก์ชัน gameLoop ครั้งแรกเพื่อเริ่มต้นการวาด
 };
+
+// ฟังก์ชันปรับขนาด canvas
+function resizeCanvas() {
+    canvas.width = window.innerWidth > 800 ? 800 : window.innerWidth;
+    canvas.height = window.innerHeight > 600 ? 600 : window.innerHeight;
+}
 
 // ฟังก์ชันเริ่มเกม
 function startGame() {
@@ -48,6 +60,18 @@ function startGame() {
     updateTimer();
     spawnTarget();
     gameLoop();
+}
+
+// ฟังก์ชันเลือกนิวเคลียสสำหรับสัมผัส
+function selectNucleusTouch(event) {
+    const touch = event.touches[0];
+    selectNucleus({ clientX: touch.clientX, clientY: touch.clientY });
+}
+
+// ฟังก์ชันเคลื่อนที่นิวเคลียสสำหรับสัมผัส
+function moveNucleusTouch(event) {
+    const touch = event.touches[0];
+    moveNucleus({ clientX: touch.clientX, clientY: touch.clientY });
 }
 
 // ฟังก์ชันเลือกนิวเคลียส
@@ -105,6 +129,7 @@ function fireParticle() {
         }
     }
 }
+
 // ฟังก์ชัน Spawn เป้ากระดาษ
 function spawnTarget() {
     let x = targetArea.x + Math.random() * targetArea.width; // สุ่มตำแหน่ง x ภายใน targetArea

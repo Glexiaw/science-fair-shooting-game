@@ -11,6 +11,25 @@ body {
 #gameCanvas {
     border: 1px solid black;
     background-color: #f0f0f0;
+    width: 100%;
+    max-width: 800px; /* สำหรับหน้าจอใหญ่ */
+    height: auto;
+}
+
+#fire-button, #restart-game, #exit {
+    font-size: 1.5em;
+    padding: 10px 20px;
+    margin: 10px;
+    width: 100%;
+    max-width: 300px;
+}
+
+/* ปรับขนาดปุ่มสำหรับมือถือ */
+@media (max-width: 600px) {
+    #fire-button, #restart-game, #exit {
+        font-size: 1.2em;
+        padding: 8px 16px;
+    }
 }
 
 #popup {
