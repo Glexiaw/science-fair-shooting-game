@@ -32,7 +32,7 @@ body {
     }
 }
 
-#popup {
+#popup, #success-screen, #failure-screen {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -41,4 +41,23 @@ body {
     padding: 20px;
     border: 1px solid #ccc;
     z-index: 1000;
+    text-align: center;
+}
+
+#success-screen h2, #failure-screen h2 {
+    font-size: 2em;
+}
+
+#success-screen h2 {
+    color: green;
+}
+
+#failure-screen h2 {
+    color: red;
+}
+
+#success-screen button, #failure-screen button {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    margin-top: 20px;
 }

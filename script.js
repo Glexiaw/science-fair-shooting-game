@@ -1,12 +1,11 @@
 let canvas, ctx;
-let score = 0;
-let timeLeft = 120;
 let isGameRunning = false;
-let particle = null;
+let particle = null; // ตัวแปรอนุภาคเริ่มต้นเป็น null
 let nuclei = [];
 let targets = [];
 const targetArea = { x: 100, y: 50, width: 600, height: 50 }; // เส้นฐานด้านบนสำหรับเป้ากระดาษ
 const gunPosition = { x: 400, y: 550 }; // ตำแหน่งปืน
+let timeLeft = 120; // เวลาที่ให้
 
 window.onload = function() {
     canvas = document.getElementById('gameCanvas');
@@ -40,6 +39,10 @@ window.onload = function() {
         dropNucleus(event);
     }, { passive: false });
 
+    // ปุ่มลองอีกครั้ง
+    document.getElementById('try-again-success').addEventListener('click', restartGame);
+    document.getElementById('try-again-failure').addEventListener('click', restartGame);
+
     // สร้างนิวเคลียส 3 อันไว้ข้างๆ ปืนยิง
     for (let i = 0; i < 3; i++) {
         nuclei.push({ x: gunPosition.x + 30 * i - 30, y: gunPosition.y - 30, radius: 15, isActive: true });
@@ -65,24 +68,47 @@ function startGame() {
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
     isGameRunning = true;
-    score = 0;
-    timeLeft = 180;
+    timeLeft = 120; // ตั้งเวลาใหม่
     resetNuclei(); // รีเซ็ตนิวเคลียส
+    particle = null; // รีเซ็ตอนุภาคให้เป็น null
+    targets = []; // เคลียร์ลิสต์ของเป้าหมาย
     updateTimer();
     spawnTarget();
     gameLoop();
 }
 
-// ฟังก์ชันเลือกนิวเคลียสสำหรับสัมผัส
-function selectNucleusTouch(event) {
-    const touch = event.touches[0];
-    selectNucleus({ clientX: touch.clientX, clientY: touch.clientY });
+// ฟังก์ชันแสดงผลหน้าจอสำเร็จ
+function showSuccessScreen() {
+    document.getElementById('success-screen').style.display = 'block';
+    document.getElementById('game-screen').style.display = 'none';
 }
 
-// ฟังก์ชันเคลื่อนที่นิวเคลียสสำหรับสัมผัส
-function moveNucleusTouch(event) {
-    const touch = event.touches[0];
-    moveNucleus({ clientX: touch.clientX, clientY: touch.clientY });
+// ฟังก์ชันแสดงผลหน้าจอไม่สำเร็จ
+function showFailureScreen() {
+    document.getElementById('failure-screen').style.display = 'block';
+    document.getElementById('game-screen').style.display = 'none';
+}
+
+// ฟังก์ชันจบเกม
+function endGame() {
+    isGameRunning = false;
+    document.getElementById('game-screen').style.display = 'none';
+
+    // แสดงผลลัพธ์เมื่อหมดเวลา
+    if (timeLeft <= 0) {
+        showFailureScreen(); // แสดงหน้าล้มเหลวถ้าหมดเวลา
+    } else {
+        showSuccessScreen(); // แสดงหน้าสำเร็จเมื่อมีการยิงเป้าหมาย
+    }
+}
+
+// ฟังก์ชันรีเซ็ตเกม
+function restartGame() {
+    document.getElementById('success-screen').style.display = 'none';
+    document.getElementById('failure-screen').style.display = 'none';
+    document.getElementById('restart-game').style.display = 'none';
+    document.getElementById('exit').style.display = 'none';
+    startGame(); // เริ่มเกมใหม่
 }
 
 // ฟังก์ชันเลือกนิวเคลียส
@@ -226,12 +252,6 @@ function drawGun() {
     ctx.fillRect(gunPosition.x - 10, gunPosition.y, 20, 10); // ปืน
 }
 
-// ฟังก์ชันวาดคะแนน
-function drawScore() {
-    ctx.fillStyle = 'black';
-    ctx.fillText(`คะแนน: ${score}`, 20, 20);
-}
-
 // ฟังก์ชันวาดเวลา
 function drawTimer() {
     ctx.fillStyle = 'black';
@@ -251,21 +271,6 @@ function updateTimer() {
     }, 1000);
 }
 
-// ฟังก์ชันจบเกม
-function endGame() {
-    isGameRunning = false;
-    document.getElementById('game-screen').style.display = 'none';
-    document.getElementById('restart-game').style.display = 'block';
-    document.getElementById('exit').style.display = 'block';
-}
-
-// ฟังก์ชันรีเซ็ตเกม
-function restartGame() {
-    document.getElementById('restart-game').style.display = 'none';
-    document.getElementById('exit').style.display = 'none';
-    startGame();
-}
-
 // ฟังก์ชันวนลูปเกม
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // ลบภาพเก่า
@@ -275,7 +280,6 @@ function gameLoop() {
     drawTargets(); // วาดเป้ากระดาษ
     drawAimLine(); // วาดเส้นเล็งเป้า
     drawGun(); // วาดปืน
-    drawScore(); // วาดคะแนน
     drawTimer(); // วาดเวลา
 
     // อัปเดตตำแหน่งของอนุภาค
@@ -287,11 +291,9 @@ function gameLoop() {
         for (let i = targets.length - 1; i >= 0; i--) {
             const target = targets[i];
             if (Math.hypot(particle.x - target.x, particle.y - target.y) < target.radius) {
-                score += 10; // เพิ่มคะแนน
-                targets.splice(i, 1); // ลบเป้าหมายที่โดน
-                particle = null; // รีเซ็ตอนุภาค
-                spawnTarget(); // สร้างเป้ากระดาษใหม่
-                break; // ออกจากลูปเมื่อโดนเป้า
+                // จบเกมเมื่อโดนเป้าหมาย
+                endGame(); // แสดงหน้าจอสำเร็จ
+                return; // หยุดการทำงานของ gameLoop
             }
         }
 
