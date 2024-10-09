@@ -24,10 +24,21 @@ window.onload = function() {
     document.getElementById('how-to-play').addEventListener('click', () => document.getElementById('popup').style.display = 'block');
     document.getElementById('close-popup').addEventListener('click', () => document.getElementById('popup').style.display = 'none');
 
-    // การลากนิวเคลียสสำหรับการสัมผัส
-    canvas.addEventListener('touchstart', selectNucleusTouch);
-    canvas.addEventListener('touchmove', moveNucleusTouch);
-    canvas.addEventListener('touchend', dropNucleus);
+    // ป้องกันการเลื่อนของหน้าเว็บเมื่อสัมผัสใน canvas
+    canvas.addEventListener('touchstart', function(event) {
+        event.preventDefault();
+        selectNucleusTouch(event);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', function(event) {
+        event.preventDefault();
+        moveNucleusTouch(event);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', function(event) {
+        event.preventDefault();
+        dropNucleus(event);
+    }, { passive: false });
 
     // สร้างนิวเคลียส 3 อันไว้ข้างๆ ปืนยิง
     for (let i = 0; i < 3; i++) {
